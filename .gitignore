@@ -1,0 +1,6 @@
+moc_*.cpp
+muview
+install
+test
+*.o
+*.a
