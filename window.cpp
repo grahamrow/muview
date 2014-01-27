@@ -77,7 +77,7 @@ Window::Window(int argc, char *argv[])
   animSlider->setPageStep(10);
   animSlider->setTickInterval(2);
   animSlider->setTickPosition(QSlider::TicksRight);
-  animSlider->setEnabled(FALSE);
+  animSlider->setEnabled(false);
   animLabel->setFixedHeight(animLabel->sizeHint().height());
   displayLayout->addWidget(glWidget);
   displayLayout->addWidget(animLabel);
@@ -216,14 +216,14 @@ void Window::adjustAnimSlider(bool back)
     animSlider->setPageStep(10);
     animSlider->setTickInterval(2);
     animSlider->setTickPosition(QSlider::TicksRight);
-    animSlider->setEnabled(TRUE);
+    animSlider->setEnabled(true);
     if (back) {
         animSlider->setSliderPosition(numFiles-1);
     } else {
         animSlider->setSliderPosition(0);
     }
   } else {
-    animSlider->setEnabled(FALSE);
+    animSlider->setEnabled(false);
   }
   //qDebug() << QString("Updated Animation Slider to size") << numFiles;
 }

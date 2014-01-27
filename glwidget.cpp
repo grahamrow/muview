@@ -3,9 +3,9 @@
 #include <GL/glu.h>
 #include <QtGui>
 #include <QtOpenGL>
-#include "glwidget.h"
 #include <iostream>
 #include "OMFContainer.h"
+#include "glwidget.h"
 
 #define PI (3.141592653589793)
 
@@ -19,13 +19,13 @@ GLWidget::GLWidget(QWidget *parent)
   xRot = xLoc = 0;
   yRot = yLoc = 0;
   zRot = xLoc = 0;
-  usePtr = false;
-  displayOn = false;
+  usePtr       = false;
+  displayOn    = false;
   topOverlayOn = true;
   topOverlayText = tr("Open files using the \"File\" menu above");
 
   qtGreen  = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
-  qtPurple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
+  qtPurple = QColor::fromRgbF(1.0, 1.0, 1.0);
 
   setAutoFillBackground(false);
 }
@@ -46,14 +46,10 @@ void GLWidget::updateData(array_ptr data)
 }
 
 QSize GLWidget::minimumSizeHint() const
-{
-  return QSize(200, 200);
-}
+{ return QSize(200, 200); }
 
-QSize GLWidget::sizeHint() const
-{
-  return QSize(800, 400);
-}
+QSize GLWidget::sizeHint() const 
+{ return QSize(800, 400); }
 
 static void qNormalizeAngle(int &angle)
 {
@@ -234,7 +230,7 @@ void GLWidget::initializeGL()
   glEnable(GL_LIGHT0);
   glEnable(GL_MULTISAMPLE);
 
-  static GLfloat global_ambient[] = { 0.65f, 0.65f, 0.65f, 1.0f };
+  static GLfloat global_ambient[] = { 2.0f, 2.0f, 2.0f, 1.0f };
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
   // Lights
   static GLfloat lightPosition1[4] = { 4.0,  1.0, 10.0, 0.0 };
