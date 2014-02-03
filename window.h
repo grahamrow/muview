@@ -107,8 +107,10 @@ private:
   int cacheSize; // Maxmimum cache size
   int cachePos;  // Current location w.r.t list of all filenames
   std::deque<array_ptr> omfCache;
+  // std::deque<int>       cacheFileDim; // The dimensionality of the data. Mostly 1 (scalar) or 3 (vector)
   QStringList filenames;
   QStringList displayNames;
+
   QString dirString;
 
   // Watch dirs

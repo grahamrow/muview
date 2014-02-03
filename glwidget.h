@@ -38,6 +38,7 @@ public slots:
   void updateCOM();
   void updateExtent();
   void updateData(array_ptr data);
+  void setDimensionality(int dim);
   void updateTopOverlay(QString newstring);
   void toggleDisplay(int cubes);
 
@@ -56,6 +57,8 @@ protected:
   void wheelEvent(QWheelEvent *event);
 
 private:
+  int valuedim; // scalar or vector
+
   int xRot;
   int yRot;
   int zRot;

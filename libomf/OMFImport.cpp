@@ -269,6 +269,7 @@ void OMFImport::parseHeader()
 			header.zmax = str2dbl(value);
 		} else if (key == "valuedim") {   // OVF 2.0
 		  header.valuedim = str2int(value);
+		  // std::cout << "Valuedim:\t" << header.valuedim << std::endl;
 		} else if (key == "valueunits") { // OVF 2.0
 		  header.valueunits.push_back(value);
 		} else if (key == "valuelabels") { // OVF 2.0
@@ -333,20 +334,34 @@ void OMFImport::parseDataAscii()
 	      ss << line;
 	      
 	      double v1, v2, v3;
-	      ss >> v1 >> v2 >> v3;
-	      
+	      if (header.valuedim == 1) {
+	      	ss >> v1;
+	      	// std::cout << v1 << std::endl;
+	      } else {
+			ss >> v1 >> v2 >> v3;
+			// std::cout << v1 << std::endl;
+	      }
+
 	      if (header.version==1) {
-		v1 = v1*header.valuemultiplier;
-		v2 = v2*header.valuemultiplier;
-		v3 = v3*header.valuemultiplier;
+	      	if (header.valuedim == 1) {
+	      		v1 = v1*header.valuemultiplier;
+	      	} else {
+				v1 = v1*header.valuemultiplier;
+				v2 = v2*header.valuemultiplier;
+				v3 = v3*header.valuemultiplier;
+			}
 	      }
 
 	      //std::cout << v1 << "\t" << v2 << "\t" << v3 << std::endl;
-
-	      (*field)[x][y][z][0] = (float)v1;
-	      (*field)[x][y][z][1] = (float)v2;
-	      (*field)[x][y][z][2] = (float)v3;
-
+	      if (header.valuedim == 1) {
+	      	  (*field)[x][y][z][0] = (float)v1;
+		      (*field)[x][y][z][1] = (float)v1;
+		      (*field)[x][y][z][2] = (float)v1;
+	      } else {
+		      (*field)[x][y][z][0] = (float)v1;
+		      (*field)[x][y][z][1] = (float)v2;
+		      (*field)[x][y][z][2] = (float)v3;
+		  }
 	      acceptLine();
 	    }
 
@@ -375,7 +390,13 @@ void OMFImport::parseDataBinary4()
   field = array_ptr(new array_type(boost::extents[header.xnodes][header.ynodes][header.znodes][3]));
 
   //const int num_cells = field->numElements();
-  const int num_cells = field->num_elements()/3;
+  int num_cells;
+  if (header.valuedim == 1) {
+  	num_cells = field->num_elements()/3;
+  	std::cout << "Number of cells:\t" << num_cells << std::endl;
+  } else {
+  	num_cells = field->num_elements()/3;
+  }
 
   // Read magic value and field contents from file
   float magic; 
@@ -394,27 +415,46 @@ void OMFImport::parseDataBinary4()
   
   if (magic != 1234567.0f) throw std::runtime_error("Wrong magic number (binary 4 format)");
 
-  float *buffer = new float [3*num_cells];
-  input->read((char*)buffer, 3*num_cells*sizeof(float));
-
-  //VectorMatrix::accessor field_acc(*field);
+  float *buffer;
+  if (header.valuedim == 1) {
+	  buffer = new float [num_cells];
+	  input->read((char*)buffer, num_cells*sizeof(float));
+  } else {
+	  buffer = new float [3*num_cells];
+	  input->read((char*)buffer, 3*num_cells*sizeof(float));
+  }
 
   const int stridez = header.ynodes*header.xnodes;
   const int stridey = header.xnodes;
   int z,y,x;
 
   for (int i=0; i<num_cells; ++i) {
-    for (int j=0; j<3; ++j) {
-      //field_acc.linearSet(i,j,fromBigEndian(buffer[i*3+j]) * header.valuemultiplier);
-      x = i%stridey;
-      z = i/stridez;
-      y = (i - x -  z*stridez)/stridey;
-      if (header.version==1) {
-	(*field)[x][y][z][j] = fromBigEndian(buffer[i*3+j]) * header.valuemultiplier;
-      } else {
-	(*field)[x][y][z][j] = fromLittleEndian(buffer[i*3+j]);
-      }
-    }
+  	x = i%stridey;
+	z = i/stridez;
+	y = (i - x -  z*stridez)/stridey;
+  	if (header.valuedim == 1) {
+  		if (header.version==1) {
+  			float val = fromBigEndian(buffer[i]) * header.valuemultiplier;
+			(*field)[x][y][z][0] = val;
+			(*field)[x][y][z][1] = val;
+			(*field)[x][y][z][2] = val;
+			// std::cout << val << std::endl;
+	      } else {
+			float val = fromLittleEndian(buffer[i]);
+			(*field)[x][y][z][0] = val;
+			(*field)[x][y][z][1] = val;
+			(*field)[x][y][z][2] = val;
+			// std::cout << val << std::endl;
+	      }
+	} else {
+	    for (int j=0; j<3; ++j) {
+	      if (header.version==1) {
+			(*field)[x][y][z][j] = fromBigEndian(buffer[i*3+j]) * header.valuemultiplier;
+	      } else {
+			(*field)[x][y][z][j] = fromLittleEndian(buffer[i*3+j]);
+	      }
+	    }
+	}
   }
 
   delete [] buffer;

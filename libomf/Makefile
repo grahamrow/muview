@@ -1,26 +1,20 @@
-include ../Make.inc
+CXX           = g++
+CXXFLAGS      = -m64 -pipe -O2 -Wall -W -D_REENTRANT -fPIE $(DEFINES)
 
-OFILES=\
-	OMFHeader.o\
-	OMFImport.o\
+OFILES = OMFHeader.o OMFImport.o
 
 all: libomf.a
 
-$(OFILES): %.o: %.cpp %.h
-	 $(CC) -c $(@:.o=.cpp)
-
+# Create the static library containing 
 libomf.a: $(OFILES) 
-	ar -cvq libomf.a $(OFILES) 
+	ar -cq libomf.a $(OFILES) 
 
-.PHONY: clean
 clean:
 	rm -f *.o *.a
 
-install: all
+####### Implicit rules
 
-.PHONY: test
-test:
+# .SUFFIXES: .o .c .cpp .cc .cxx .C
 
-.PHONY: bench
-bench:
-
+.cpp.o:
+	$(CXX) -c $(CXXFLAGS) -o "$@" "$<"

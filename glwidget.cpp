@@ -14,7 +14,7 @@
 #endif
 
 GLWidget::GLWidget(QWidget *parent)
-  : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+: QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
 {
   xRot = xLoc = 0;
   yRot = yLoc = 0;
@@ -43,6 +43,11 @@ void GLWidget::updateData(array_ptr data)
   updateCOM();
   updateExtent();
   updateGL();
+}
+
+void GLWidget::setDimensionality(int dim)
+{
+  valuedim = dim;
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -91,56 +96,56 @@ void GLWidget::setZRotation(int angle)
 
 void GLWidget::setXCom(float val)
 {
-    if (xcom != val) {
-        xcom = val;
-        emit COMChanged(val);
-        updateGL();
-    }
+  if (xcom != val) {
+    xcom = val;
+    emit COMChanged(val);
+    updateGL();
+  }
 }
 
 void GLWidget::setYCom(float val)
 {
-    if (ycom != val) {
-        ycom = val;
-        emit COMChanged(val);
-        updateGL();
-    }
+  if (ycom != val) {
+    ycom = val;
+    emit COMChanged(val);
+    updateGL();
+  }
 }
 
 void GLWidget::setZCom(float val)
 {
-    if (zcom != val) {
-        zcom = val;
-        emit COMChanged(val);
-        updateGL();
-    }
+  if (zcom != val) {
+    zcom = val;
+    emit COMChanged(val);
+    updateGL();
+  }
 }
 
 void GLWidget::setXLoc(float val)
 {
-    if (xLoc != val) {
-        xLoc = val;
-        emit COMChanged(val);
-        updateGL();
-    }
+  if (xLoc != val) {
+    xLoc = val;
+    emit COMChanged(val);
+    updateGL();
+  }
 }
 
 void GLWidget::setYLoc(float val)
 {
-    if (yLoc != val) {
-        yLoc = val;
-        emit COMChanged(val);
-        updateGL();
-    }
+  if (yLoc != val) {
+    yLoc = val;
+    emit COMChanged(val);
+    updateGL();
+  }
 }
 
 void GLWidget::setZLoc(float val)
 {
-    if (zLoc != val) {
-        zLoc = val;
-        emit COMChanged(val);
-        updateGL();
-    }
+  if (zLoc != val) {
+    zLoc = val;
+    emit COMChanged(val);
+    updateGL();
+  }
 }
 
 void GLWidget::setXSliceLow(int low)
@@ -245,129 +250,135 @@ void GLWidget::initializeGL()
   gluQuadricOrientation(bottom, GLU_INSIDE); // Flip the disk
   // Draw a vector pointing along the z axis
   glNewList(vector, GL_COMPILE);
-    glPushMatrix();
-    gluDisk( bottom, 0.0f, 0.2f, 10, 2 );
-    gluCylinder( cylinder, 0.2f, 0.2f, 1.0f, 10, 1 );
-    glTranslatef(0.0f, 0.0f, 1.0f);
+  glPushMatrix();
+  gluDisk( bottom, 0.0f, 0.2f, 10, 2 );
+  gluCylinder( cylinder, 0.2f, 0.2f, 1.0f, 10, 1 );
+  glTranslatef(0.0f, 0.0f, 1.0f);
     glutSolidCone(0.35f, 0.95f, 10, 1); // The tip
     glPopMatrix();
-  glEndList();
+    glEndList();
 
   // Display List for cone
-  cone = glGenLists(1);
+    cone = glGenLists(1);
   // Draw a cone pointing along the z axis
-  glNewList(cone, GL_COMPILE);
+    glNewList(cone, GL_COMPILE);
     glPushMatrix();
     glutSolidCone(0.35f, 0.95f, 10, 1);
     glPopMatrix();
-  glEndList();
-  
+    glEndList();
+
   // Display List for cube
-  cube = glGenLists(1);
+    cube = glGenLists(1);
   // Draw a cone pointing along the z axis
-  glNewList(cube, GL_COMPILE);
+    glNewList(cube, GL_COMPILE);
     glPushMatrix();
     glutSolidCube(1.0f);
     glPopMatrix();
-  glEndList();
+    glEndList();
 
   // Set the slice initial conditions
-  xSliceLow=ySliceLow=zSliceLow=0;
-  xSliceHigh=ySliceHigh=zSliceHigh=16*100;
+    xSliceLow=ySliceLow=zSliceLow=0;
+    xSliceHigh=ySliceHigh=zSliceHigh=16*100;
 
   // Initial view
-  zoom=0.1;
-}
+    zoom=0.1;
+  }
 
-void GLWidget::toggleDisplay(int cubes) 
-{
-  drawCubes = cubes;
-  updateGL();
-}
+  void GLWidget::toggleDisplay(int cubes) 
+  {
+    drawCubes = cubes;
+    updateGL();
+  }
 
-void GLWidget::paintGL()
-{
-  glShadeModel(GL_SMOOTH);
-  glEnable(GL_CULL_FACE);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
+  void GLWidget::paintGL()
+  {
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
 
-  qglClearColor(qtPurple.dark());
+    qglClearColor(qtPurple.dark());
 
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glLoadIdentity();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
   //gluLookAt(eyex, eyey, eyez, atx, aty, atz, upx, upy, upz);
-  glTranslatef(xLoc, yLoc, -15.0 + zoom);
-  glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
-  glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
-  glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
+    glTranslatef(xLoc, yLoc, -15.0 + zoom);
+    glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
+    glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
+    glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
 
-  if (displayOn) {
+    if (displayOn) {
 
-    const long unsigned int *size = dataPtr->shape();
-    int xnodes = size[0];
-    int ynodes = size[1];
-    int znodes = size[2];
-    float theta, phi, mag;
+      const long unsigned int *size = dataPtr->shape();
+      int xnodes = size[0];
+      int ynodes = size[1];
+      int znodes = size[2];
+      float theta, phi, mag;
+      float minVal, maxVal;
+      // minVal = *std::min_element( dataPtr->begin(), dataPtr->end());
+      // maxVal = *std::max_element( dataPtr->begin(), dataPtr->end());
     //std::cout << xnodes << ynodes << znodes <<  std::endl;
-    for(int i=0; i<xnodes; i++)
+      for(int i=0; i<xnodes; i++)
       {
-	for(int j=0; j<ynodes; j++)
-	  {
-	    for(int k=0; k<znodes; k++)
-	      {
-		mag = sqrt( (*dataPtr)[i][j][k][0] * (*dataPtr)[i][j][k][0] +
-			    (*dataPtr)[i][j][k][1] * (*dataPtr)[i][j][k][1] +
-			    (*dataPtr)[i][j][k][2] * (*dataPtr)[i][j][k][2]);
-		//float mz = (*dataPtr)[i][j][k][2];
-		if (mag > 0.001 &&
-		    i >= (xmax-xmin)*(float)xSliceLow/1600.0 &&
-		    i <= (xmax-xmin)*(float)xSliceHigh/1600.0 &&
-		    j >= (ymax-ymin)*(float)ySliceLow/1600.0 &&
-		    j <= (ymax-ymin)*(float)ySliceHigh/1600.0 &&
-		    k >= (zmax-zmin)*(float)zSliceLow/1600.0 &&
-		    k <= (zmax-zmin)*(float)zSliceHigh/1600.0) 
-		  {
-		    
-		    theta = acos(  (*dataPtr)[i][j][k][2]/mag);
-		    phi   = atan2( (*dataPtr)[i][j][k][1]/mag,  (*dataPtr)[i][j][k][0]/mag);
-		    
-		    glPushMatrix();
-		    
-		    glTranslatef((float)i-xcom,(float)j-ycom, (float)k-zcom);
+       for(int j=0; j<ynodes; j++)
+       {
+         for(int k=0; k<znodes; k++)
+         {
+          mag = sqrt( (*dataPtr)[i][j][k][0] * (*dataPtr)[i][j][k][0] +
+           (*dataPtr)[i][j][k][1] * (*dataPtr)[i][j][k][1] +
+           (*dataPtr)[i][j][k][2] * (*dataPtr)[i][j][k][2]);
 
-		    //GLfloat color[3] = {sin(phi), cos(phi), cos(phi+1.0f)};
-		    GLfloat color[3];
-		    //angleToRGB(phi, color);
-			
-			float x = (*dataPtr)[i][j][k][0]/mag;
-			float y = (*dataPtr)[i][j][k][1]/mag;
-			float z = (*dataPtr)[i][j][k][2]/mag;
-			float s = sqrt(x*x + y*y + z*z);
-			float l = 0.5*z + 0.5;
-			float h = atan2(y, x);
-		    HSLToRGB(h, s, l, color);
+          if (mag != 0.0 &&
+            i >= (xmax-xmin)*(float)xSliceLow/1600.0 &&
+            i <= (xmax-xmin)*(float)xSliceHigh/1600.0 &&
+            j >= (ymax-ymin)*(float)ySliceLow/1600.0 &&
+            j <= (ymax-ymin)*(float)ySliceHigh/1600.0 &&
+            k >= (zmax-zmin)*(float)zSliceLow/1600.0 &&
+            k <= (zmax-zmin)*(float)zSliceHigh/1600.0) 
+          {
 
-		    glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
-		    glMaterialfv(GL_FRONT, GL_AMBIENT, color);
-		    glColor3fv(color);
-		    if (drawCubes==0) {
-		      glCallList(cube);
-		    } else if (drawCubes==1) {		    
-		      glRotatef(180.0*(phi+0.5*PI)/PI, 0.0, 0.0, 1.0);
-		      glRotatef(180.0*theta/PI,  1.0, 0.0, 0.0);
-		      glCallList(cone);
-		    } else {
-          glRotatef(180.0*(phi+0.5*PI)/PI, 0.0, 0.0, 1.0);
-          glRotatef(180.0*theta/PI,  1.0, 0.0, 0.0);
-          glCallList(vector);
+            theta = acos(  (*dataPtr)[i][j][k][2]/mag);
+            phi   = atan2( (*dataPtr)[i][j][k][1]/mag,  (*dataPtr)[i][j][k][0]/mag);
+
+            glPushMatrix();
+
+            glTranslatef((float)i-xcom,(float)j-ycom, (float)k-zcom);
+
+            GLfloat color[3];
+
+            float x = (*dataPtr)[i][j][k][0]/mag;
+            float y = (*dataPtr)[i][j][k][1]/mag;
+            float z = (*dataPtr)[i][j][k][2]/mag;
+            float s = sqrt(x*x + y*y + z*z);
+            float l = 0.5*z + 0.5;
+            float h = atan2(y, x);
+            if (valuedim == 1) {
+              h = 4.0*3.14159*mag/255.0;
+              HSLToRGB(h, 1.0, 0.5, color);
+            } else {
+              HSLToRGB(h, s, l, color);
+            }
+
+            glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+            glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+            glColor3fv(color);
+            if (drawCubes==0) {
+              glCallList(cube);
+            } else if (drawCubes==1) {		    
+              glRotatef(180.0*(phi+0.5*PI)/PI, 0.0, 0.0, 1.0);
+              glRotatef(180.0*theta/PI,  1.0, 0.0, 0.0);
+              glCallList(cone);
+            } else {
+              glRotatef(180.0*(phi+0.5*PI)/PI, 0.0, 0.0, 1.0);
+              glRotatef(180.0*theta/PI,  1.0, 0.0, 0.0);
+              glCallList(vector);
+            }
+            glPopMatrix();
+          }
         }
-		    glPopMatrix();
-		  }
-	      }
-	  }
       }
+    }
   } 
 
   if (topOverlayOn) {
@@ -413,19 +424,19 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     setXRotation(xRot + 8 * dy);
     setZRotation(zRot + 8 * dx);
   } else if (event->buttons() & Qt::MiddleButton) {
-      setXLoc(xLoc + 0.2*dx);
-      setYLoc(yLoc - 0.2*dy);
+    setXLoc(xLoc + 0.2*dx);
+    setYLoc(yLoc - 0.2*dy);
   }
   lastPos = event->pos();
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
-    if(event->orientation() == Qt::Vertical)
-      {
-	zoom += (float)(event->delta()) / 100;
-	updateGL();
-      }
+  if(event->orientation() == Qt::Vertical)
+  {
+   zoom += (float)(event->delta()) / 100;
+   updateGL();
+ }
 }
 
 void GLWidget::drawInstructions(QPainter *painter)
@@ -435,15 +446,15 @@ void GLWidget::drawInstructions(QPainter *painter)
   int border = qMax(4, metrics.leading());
 
   QRect rect = metrics.boundingRect(0, 0, width() - 2*border, int(height()*0.125),
-				    Qt::AlignCenter | Qt::TextWordWrap, text);
+    Qt::AlignCenter | Qt::TextWordWrap, text);
 
   painter->setRenderHint(QPainter::TextAntialiasing);
   painter->fillRect(QRect(0, 0, width(), rect.height() + 2*border),
-		    QColor(0, 0, 0, 127));
+    QColor(0, 0, 0, 127));
   painter->setPen(Qt::white);
   painter->drawText((width() - rect.width())/2, border,
-		    rect.width(), rect.height(),
-		    Qt::AlignLeft | Qt::TextWordWrap, text);
+    rect.width(), rect.height(),
+    Qt::AlignLeft | Qt::TextWordWrap, text);
 }
 
 
@@ -499,9 +510,9 @@ void angleToRGB(float angle, GLfloat *color)
 
 /// Taken form http://www.geekymonkey.com/Programming/CSharp/RGB2HSL_HSL2RGB.htm
 void HSLToRGB(float h, float sl, float l, GLfloat *color){
-			h = (h + PI)/(2 * PI);
-            double v;
-            double r,g,b;
+ h = (h + PI)/(2 * PI);
+ double v;
+ double r,g,b;
  
             r = l;   // default to gray
             g = l;
@@ -509,59 +520,59 @@ void HSLToRGB(float h, float sl, float l, GLfloat *color){
             v = (l <= 0.5) ? (l * (1.0 + sl)) : (l + sl - l * sl);
             if (v > 0)
             {
-                  double m;
-                  double sv;
-                  int sextant;
-                  double fract, vsf, mid1, mid2;
- 
-                  m = l + l - v;
-                  sv = (v - m ) / v;
-                  h *= 6.0;
-                  sextant = (int)h;
-                  fract = h - sextant;
-                  vsf = v * sv * fract;
-                  mid1 = m + vsf;
-                  mid2 = v - vsf;
-                  switch (sextant)
-                  {
-                        case 0:
-                              r = v;
-                              g = mid1;
-                              b = m;
-                              break;
-                        case 1:
-                              r = mid2;
-                              g = v;
-                              b = m;
-                              break;
-                        case 2:
-                              r = m;
-                              g = v;
-                              b = mid1;
-                              break;
-                        case 3:
-                              r = m;
-                              g = mid2;
-                              b = v;
-                              break;
-                        case 4:
-                              r = mid1;
-                              g = m;
-                              b = v;
-                              break;
-                        case 5:
-                              r = v;
-                              g = m;
-                              b = mid2;
-                              break;
-                  }
+              double m;
+              double sv;
+              int sextant;
+              double fract, vsf, mid1, mid2;
+
+              m = l + l - v;
+              sv = (v - m ) / v;
+              h *= 6.0;
+              sextant = (int)h;
+              fract = h - sextant;
+              vsf = v * sv * fract;
+              mid1 = m + vsf;
+              mid2 = v - vsf;
+              switch (sextant)
+              {
+                case 0:
+                r = v;
+                g = mid1;
+                b = m;
+                break;
+                case 1:
+                r = mid2;
+                g = v;
+                b = m;
+                break;
+                case 2:
+                r = m;
+                g = v;
+                b = mid1;
+                break;
+                case 3:
+                r = m;
+                g = mid2;
+                b = v;
+                break;
+                case 4:
+                r = mid1;
+                g = m;
+                b = v;
+                break;
+                case 5:
+                r = v;
+                g = m;
+                b = mid2;
+                break;
+              }
             }
 
-	color[0] = r;
-	color[1] = g;
-	color[2] = b;
+            color[0] = r;
+            color[1] = g;
+            color[2] = b;
 
-}
+          }
 
 
 

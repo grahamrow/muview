@@ -166,11 +166,13 @@ Window::Window(int argc, char *argv[])
         OMFHeader tempHeader = OMFHeader();
         for (int loadPos=0; loadPos<cacheSize && loadPos<filenames.size(); loadPos++) {
             omfCache.push_back(readOMF((filenames[loadPos]).toStdString(), tempHeader));
+            // cacheFileDim.push_back(tempHeader.valuedim);
             //qDebug() << QString("Pushing Back") << filenames[loadPos];
         }
 
         // Update the Display with the first element
         glWidget->updateData(omfCache.front());
+        glWidget->setDimensionality(tempHeader.valuedim);
         // Update the top overlay
         glWidget->updateTopOverlay(filenames.front());
         // Refresh the animation bar
@@ -299,9 +301,11 @@ void Window::openFiles()
 
       // Push our file data
       omfCache.push_back(readOMF(fileName.toStdString(), tempHeader));
+
       // Update the Display with the first element
       glWidget->updateData(omfCache.back());
-      
+      glWidget->setDimensionality(tempHeader.valuedim);
+
       // Refresh the animation bar
       adjustAnimSlider(false);
 
@@ -377,6 +381,7 @@ void Window::updateWatchedFiles(const QString& str) {
         if (!noFollowUpdate) {
             // Update the Display with the last element
             glWidget->updateData(omfCache.back());
+            glWidget->setDimensionality(tempHeader.valuedim);
             // Update the top overlay
             glWidget->updateTopOverlay(displayNames.back());
         }
@@ -429,6 +434,7 @@ void Window::updateDisplayData(int index)
     // Update the Display
     //qDebug() << QString("Current cache size") << omfCache.size();
     glWidget->updateData(omfCache.at(index-cachePos));
+    glWidget->setDimensionality(tempHeader.valuedim);
   } else {
       //qDebug() << QString("Out of Cache Range!!!!") << index << cachePos;
       glWidget->updateTopOverlay(QString("Don't scroll so erratically..."));
@@ -483,7 +489,8 @@ void Window::openDir()
 
       // Update the Display with the first element
       glWidget->updateData(omfCache.front());
-  
+      glWidget->setDimensionality(tempHeader.valuedim);
+
       // Update the top overlay
       glWidget->updateTopOverlay(displayNames.front());
 
@@ -545,7 +552,8 @@ void Window::watchDir(const QString& str)
 
           // Update the Display with the first element
           glWidget->updateData(omfCache.back());
-
+          glWidget->setDimensionality(tempHeader.valuedim);
+          
           // Update the top overlay
           glWidget->updateTopOverlay(displayNames.back());
 
