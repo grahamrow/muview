@@ -1,5 +1,6 @@
 // This part is originally created and released into the public
 // domain by Gunnar Selke <gselke@physnet.uni-hamburg.de>.
+// Modified by Graham Rowlands <grahamrow@gmail.com>
 
 #include <stdlib.h>
 
@@ -12,6 +13,7 @@
 #include "OMFImport.h"
 #include "OMFContainer.h"
 #include "OMFEndian.h"
+#include "OMFAnalyze.h"
 //using namespace std;
 
 struct OMFImport
@@ -50,7 +52,6 @@ array_ptr readOMF(const std::string &path, OMFHeader &header)
   omf.read(in);
   header = omf.header;
   return array_ptr(omf.field);
-  //return VectorMatrix(*(omf.field));
 }
 
 array_ptr readOMF(std::istream &in, OMFHeader &header)
@@ -59,7 +60,6 @@ array_ptr readOMF(std::istream &in, OMFHeader &header)
 	omf.read(in);
 	header = omf.header;
 	return array_ptr(omf.field);
-	//return VectorMatrix(*(omf.field));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ void OMFImport::read(std::istream &in)
 	input->read(&next_char, sizeof(char));
 
 	acceptLine(); // read in first line
-	parse(); // Parse file
+	parse();      // Parse file
 }
 
 void OMFImport::acceptLine()
@@ -269,7 +269,6 @@ void OMFImport::parseHeader()
 			header.zmax = str2dbl(value);
 		} else if (key == "valuedim") {   // OVF 2.0
 		  header.valuedim = str2int(value);
-		  // std::cout << "Valuedim:\t" << header.valuedim << std::endl;
 		} else if (key == "valueunits") { // OVF 2.0
 		  header.valueunits.push_back(value);
 		} else if (key == "valuelabels") { // OVF 2.0

@@ -5,6 +5,7 @@
 #include <QtOpenGL>
 #include <iostream>
 #include "OMFContainer.h"
+#include "analysis.h"
 #include "glwidget.h"
 
 #define PI (3.141592653589793)
@@ -45,9 +46,19 @@ void GLWidget::updateData(array_ptr data)
   updateGL();
 }
 
-void GLWidget::setDimensionality(int dim)
+void GLWidget::updateHeader(header_ptr header, array_ptr data)
 {
-  valuedim = dim;
+  valuedim = header->valuedim;
+  if ((header->xmin == 0.0) && (header->xmax == 0.0) && \
+      (header->ymin == 0.0) && (header->ymax == 0.0) && \
+      (header->zmin == 0.0) && (header->zmax == 0.0)) {
+    // Nothing set for the extents...
+    if (valuedim == 3) {
+      minmaxmag(data, minmag, maxmag);
+    } else if (valuedim == 1) {
+      minmax(data, minmag, maxmag);
+    }
+  }
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -315,21 +326,22 @@ void GLWidget::initializeGL()
       int ynodes = size[1];
       int znodes = size[2];
       float theta, phi, mag;
-      float minVal, maxVal;
-      // minVal = *std::min_element( dataPtr->begin(), dataPtr->end());
-      // maxVal = *std::max_element( dataPtr->begin(), dataPtr->end());
-    //std::cout << xnodes << ynodes << znodes <<  std::endl;
+
       for(int i=0; i<xnodes; i++)
       {
        for(int j=0; j<ynodes; j++)
        {
          for(int k=0; k<znodes; k++)
          {
+          if (valuedim == 1) {
+            mag = (*dataPtr)[i][j][k][0];
+          } else {
           mag = sqrt( (*dataPtr)[i][j][k][0] * (*dataPtr)[i][j][k][0] +
            (*dataPtr)[i][j][k][1] * (*dataPtr)[i][j][k][1] +
            (*dataPtr)[i][j][k][2] * (*dataPtr)[i][j][k][2]);
+          }
 
-          if (mag != 0.0 &&
+          if ( ((valuedim == 1 ) || ((valuedim == 3) && mag != 0.0)) &&
             i >= (xmax-xmin)*(float)xSliceLow/1600.0 &&
             i <= (xmax-xmin)*(float)xSliceHigh/1600.0 &&
             j >= (ymax-ymin)*(float)ySliceLow/1600.0 &&
@@ -354,8 +366,9 @@ void GLWidget::initializeGL()
             float l = 0.5*z + 0.5;
             float h = atan2(y, x);
             if (valuedim == 1) {
-              h = 4.0*3.14159*mag/255.0;
-              HSLToRGB(h, 1.0, 0.5, color);
+              // std::cout << mag << "\t" << maxmag << std::endl;
+              phi = PI*fabs(0.001+mag-minmag)/(maxmag-minmag);
+              HSLToRGB(phi, 1.0, 0.4, color);
             } else {
               HSLToRGB(h, s, l, color);
             }
@@ -363,7 +376,8 @@ void GLWidget::initializeGL()
             glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
             glMaterialfv(GL_FRONT, GL_AMBIENT, color);
             glColor3fv(color);
-            if (drawCubes==0) {
+
+            if (drawCubes==0 || valuedim==1) {
               glCallList(cube);
             } else if (drawCubes==1) {		    
               glRotatef(180.0*(phi+0.5*PI)/PI, 0.0, 0.0, 1.0);

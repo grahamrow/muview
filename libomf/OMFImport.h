@@ -1,5 +1,6 @@
 // This part is originally created and released into the public
 // domain by Gunnar Selke <gselke@physnet.uni-hamburg.de>.
+// Modified by Graham Rowlands <grahamrow@gmail.com>
 
 #ifndef OMF_IMPORT_H
 #define OMF_IMPORT_H
@@ -18,9 +19,6 @@
 
 array_ptr readOMF(const std::string  &path, OMFHeader &header);
 array_ptr readOMF(      std::istream   &in, OMFHeader &header);
-
-//VectorMatrix readOMF(const std::string &path, OMFHeader &header);
-//VectorMatrix readOMF(       std::istream &in, OMFHeader &header);
 
 #endif
 

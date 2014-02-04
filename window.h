@@ -6,13 +6,17 @@
 #include <QMap>
 #include <QString>
 #include <QDateTime>
+#include <boost/smart_ptr.hpp>
 
 // Other parts of the interface
 #include "preferences.h"
 
 // For reading OMF files
 #include "OMFContainer.h"
+#include "OMFHeader.h"
 #include <deque>
+
+typedef boost::shared_ptr<OMFHeader> header_ptr;
 
 // General widget stuff 
 class QSlider;
@@ -104,10 +108,18 @@ private:
   // A finite number of files, as governed by cacheSize, will
   // reside in memory at a given time, otherwise we will choke
   // the system on large output directories.
+
   int cacheSize; // Maxmimum cache size
   int cachePos;  // Current location w.r.t list of all filenames
-  std::deque<array_ptr> omfCache;
-  // std::deque<int>       cacheFileDim; // The dimensionality of the data. Mostly 1 (scalar) or 3 (vector)
+
+  void clearOMFCache();
+  void clearHeaderCache();
+  void gotoBackOfCache();
+  void gotoFrontOfCache();
+  void processFilenames();
+
+  std::deque<array_ptr>  omfCache;
+  std::deque<header_ptr> omfHeaderCache;
   QStringList filenames;
   QStringList displayNames;
 

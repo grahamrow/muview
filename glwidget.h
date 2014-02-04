@@ -3,7 +3,11 @@
 
 #include <QGLWidget>
 #include <QtOpenGL>
+#include <boost/smart_ptr.hpp>
 #include "OMFContainer.h"
+#include "OMFHeader.h"
+
+typedef boost::shared_ptr<OMFHeader> header_ptr;
 
 void angleToRGB(float angle, GLfloat *color);
 void HSLToRGB(float h, float s, float l, GLfloat *color);
@@ -38,7 +42,7 @@ public slots:
   void updateCOM();
   void updateExtent();
   void updateData(array_ptr data);
-  void setDimensionality(int dim);
+  void updateHeader(header_ptr header, array_ptr data);
   void updateTopOverlay(QString newstring);
   void toggleDisplay(int cubes);
 
@@ -90,6 +94,9 @@ private:
   float xmax, xmin;
   float ymax, ymin;
   float zmax, zmin;
+
+  // Max Values
+  float maxmag, minmag;
 
   // slice variables
   int xSliceLow, xSliceHigh;
