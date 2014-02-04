@@ -117,7 +117,6 @@ Window::Window(int argc, char *argv[])
 	
 	// Load files from command line if supplied
 	if (argc > 1) {
-		OMFHeader tempHeader = OMFHeader();
 		QStringList rawList;
 		for (int i=1; i<argc; i++) {
 			rawList << argv[i];
@@ -269,25 +268,25 @@ void Window::settings()
 
 void Window::processFilenames() {
 	// Looping over files
-	header_ptr header = header_ptr(new OMFHeader());
 	for (int loadPos=0; loadPos<cacheSize && loadPos<filenames.size(); loadPos++) {
-		omfCache.push_back(readOMF((filenames[loadPos]).toStdString(), *header));
+		header_ptr header = header_ptr(new OMFHeader());
 		omfHeaderCache.push_back(header);
+		omfCache.push_back(readOMF((filenames[loadPos]).toStdString(), *header));
 	}
 }
 
 void Window::gotoFrontOfCache() {
-	glWidget->updateData(omfCache.front());
-	glWidget->updateHeader(omfHeaderCache.front(), omfCache.back());
+	glWidget->updateHeader(omfHeaderCache.front(), omfCache.front());
 	glWidget->updateTopOverlay(filenames.front());
+	glWidget->updateData(omfCache.front());
 	cachePos = 0;
 	adjustAnimSlider(false); // Go to end of slider
 }
 
 void Window::gotoBackOfCache() {
-	glWidget->updateData(omfCache.back());
 	glWidget->updateHeader(omfHeaderCache.back(), omfCache.back());
 	glWidget->updateTopOverlay(filenames.back());
+	glWidget->updateData(omfCache.back());
 	cachePos = filenames.size()-1;
 	adjustAnimSlider(true); // Go to start of slider
 }
@@ -402,8 +401,8 @@ void Window::updateDisplayData(int index)
 		cachePos = index;
 		for (int loadPos=index; loadPos<(index+cacheSize) && loadPos<filenames.size(); loadPos++) {
 			header_ptr header = header_ptr(new OMFHeader());
-			omfCache.push_back(readOMF((filenames[loadPos]).toStdString(), *header));
 			omfHeaderCache.push_back(header);
+			omfCache.push_back(readOMF((filenames[loadPos]).toStdString(), *header));
 		}
 		cachePos = index;
 	} else if ( index < cachePos ) {
@@ -413,12 +412,11 @@ void Window::updateDisplayData(int index)
 			if (omfCache.size()==uint(cacheSize)) {
 				omfCache.pop_back();
 				omfHeaderCache.pop_back();
-			} else {
-						 //qDebug() << QString("Refilling");
-			}
+			} 
 			header_ptr header = header_ptr(new OMFHeader());
-			omfCache.push_front(readOMF((filenames[loadPos]).toStdString(), *header));
 			omfHeaderCache.push_front(header);
+			omfCache.push_front(readOMF((filenames[loadPos]).toStdString(), *header));
+			
 		}
 		cachePos = index;
 	}
@@ -430,8 +428,8 @@ void Window::updateDisplayData(int index)
 		glWidget->updateTopOverlay(displayNames[index]);
 		// Update the Display
 		//qDebug() << QString("Current cache size") << omfCache.size();
-		glWidget->updateData(omfCache.at(index-cachePos));
 		glWidget->updateHeader(omfHeaderCache.at(index-cachePos), omfCache.at(index-cachePos));
+		glWidget->updateData(omfCache.at(index-cachePos));
 	} else {
 			//qDebug() << QString("Out of Cache Range!!!!") << index << cachePos;
 		glWidget->updateTopOverlay(QString("Don't scroll so erratically..."));
@@ -515,12 +513,13 @@ void Window::watchDir(const QString& str)
 			// Only cache the last file
 			header_ptr header = header_ptr(new OMFHeader());
 			cachePos = filenames.size()-1;
-			omfCache.push_back(readOMF(filenames.last().toStdString(), *header));
 			omfHeaderCache.push_back(header);
-			// Update the Display with the first element
-			glWidget->updateData(omfCache.back());
-			glWidget->updateHeader(omfHeaderCache.back(), omfCache.back());
+			omfCache.push_back(readOMF(filenames.last().toStdString(), *header));
 
+			// Update the Display with the first element
+			glWidget->updateHeader(omfHeaderCache.back(), omfCache.back());
+			glWidget->updateData(omfCache.back());
+			
 			// Update the top overlay
 			glWidget->updateTopOverlay(displayNames.back());
 

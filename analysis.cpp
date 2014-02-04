@@ -2,8 +2,8 @@
 #include "OMFContainer.h"
 
 void minmax(array_ptr array, float &min, float &max) {
-	float minSearch = 0.0;
-	float maxSearch = 0.0;
+	float minSearch = (float)(*array)[0][0][0][0];;
+	float maxSearch = (float)(*array)[0][0][0][0];;
 
 	const long unsigned int *size = array->shape();
 	int xnodes = size[0];
@@ -29,14 +29,17 @@ void minmax(array_ptr array, float &min, float &max) {
 
 	max = maxSearch;
 	min = minSearch;
-	std::cout << "Max value\t" << max << std::endl;
-	std::cout << "Min value\t" << min << std::endl;
+	// std::cout << "Max value\t" << max << std::endl;
+	// std::cout << "Min value\t" << min << std::endl;
 }
 
 void minmaxmag(array_ptr array, float &min, float &max) {
-	float minSearch = 0.0;
-	float maxSearch = 0.0;
-	float mag;
+	float mag = sqrt( (*array)[0][0][0][0] * (*array)[0][0][0][0] +
+		            (*array)[0][0][0][1] * (*array)[0][0][0][1] +
+		            (*array)[0][0][0][2] * (*array)[0][0][0][2]);
+	float minSearch = mag;
+	float maxSearch = mag;
+
 
 	const long unsigned int *size = array->shape();
 	int xnodes = size[0];
@@ -64,6 +67,6 @@ void minmaxmag(array_ptr array, float &min, float &max) {
 	}
 	max = maxSearch;
 	min = minSearch;
-	std::cout << "Max value\t" << max << std::endl;
-	std::cout << "Min value\t" << min << std::endl;
+	// std::cout << "Max value\t" << max << std::endl;
+	// std::cout << "Min value\t" << min << std::endl;
 }

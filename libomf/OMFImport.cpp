@@ -392,7 +392,7 @@ void OMFImport::parseDataBinary4()
   int num_cells;
   if (header.valuedim == 1) {
   	num_cells = field->num_elements()/3;
-  	std::cout << "Number of cells:\t" << num_cells << std::endl;
+  	// std::cout << "Number of cells:\t" << num_cells << std::endl;
   } else {
   	num_cells = field->num_elements()/3;
   }

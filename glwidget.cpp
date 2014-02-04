@@ -246,7 +246,7 @@ void GLWidget::initializeGL()
   glEnable(GL_LIGHT0);
   glEnable(GL_MULTISAMPLE);
 
-  static GLfloat global_ambient[] = { 2.0f, 2.0f, 2.0f, 1.0f };
+  static GLfloat global_ambient[] = { 1.0f, 1.0f, 1.0f, 1.0f };
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
   // Lights
   static GLfloat lightPosition1[4] = { 4.0,  1.0, 10.0, 0.0 };
@@ -367,8 +367,13 @@ void GLWidget::initializeGL()
             float h = atan2(y, x);
             if (valuedim == 1) {
               // std::cout << mag << "\t" << maxmag << std::endl;
-              phi = PI*fabs(0.001+mag-minmag)/(maxmag-minmag);
-              HSLToRGB(phi, 1.0, 0.4, color);
+              if (maxmag!=minmag) {
+                phi = 2.0f*PI*fabs(mag-minmag)/fabs(maxmag-minmag);
+              } else {
+                phi = 0.0f;
+              }
+              // std::cout << "Phi:\t" << phi << std::endl;
+              angleToRGB(phi, color);
             } else {
               HSLToRGB(h, s, l, color);
             }
@@ -448,7 +453,7 @@ void GLWidget::wheelEvent(QWheelEvent *event)
 {
   if(event->orientation() == Qt::Vertical)
   {
-   zoom += (float)(event->delta()) / 100;
+   zoom += (float)(event->delta()) / 50;
    updateGL();
  }
 }
@@ -456,10 +461,12 @@ void GLWidget::wheelEvent(QWheelEvent *event)
 void GLWidget::drawInstructions(QPainter *painter)
 {
   QString text = topOverlayText;
+  QFont newFont("Helvetica", 9);
+  painter->setFont(newFont);
   QFontMetrics metrics = QFontMetrics(font());
   int border = qMax(4, metrics.leading());
 
-  QRect rect = metrics.boundingRect(0, 0, width() - 2*border, int(height()*0.125),
+  QRect rect = metrics.boundingRect(0, 0, width() - 2*border, int(height()*0.135),
     Qt::AlignCenter | Qt::TextWordWrap, text);
 
   painter->setRenderHint(QPainter::TextAntialiasing);
@@ -486,8 +493,9 @@ void GLWidget::updateTopOverlay(QString newstring)
 void angleToRGB(float angle, GLfloat *color)
 {
   // starting from Hue = angle (in radians)
+  // goes from zero to pi
   float piOverThree = PI/3.0;
-  float h = fabs((angle+PI)/piOverThree);
+  float h = fabs((angle)/piOverThree);
   float x = (1.0-fabs(fmodf(h,2.0)-1.0));
 
   if (h <= 1.0) {
@@ -515,6 +523,7 @@ void angleToRGB(float angle, GLfloat *color)
     color[1] = 0.0;
     color[2] = x;
   } else {
+    // std::cout << "H is:\t" << h << std::endl;
     color[0] = 0.0;
     color[1] = 0.0;
     color[2] = 0.0;
