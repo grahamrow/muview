@@ -60,12 +60,13 @@ private slots:
   void openSettings();
   void openAbout();
   void updateDisplayData(int index);
-  
+  void updatePrefs();
+
 private:
   // Main Window Stuff
   Ui::Window *ui;
-  void createActions();
-  void createMenus();
+//  void createActions();
+//  void createMenus();
   void adjustAnimSlider(bool back);
 
 //  QMenu *fileMenu;

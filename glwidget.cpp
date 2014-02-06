@@ -22,11 +22,12 @@ GLWidget::GLWidget(QWidget *parent)
   zRot = xLoc = 0;
   usePtr       = false;
   displayOn    = false;
-  topOverlayOn = true;
-  topOverlayText = tr("Open files using the \"File\" menu above");
+//  topOverlayOn = true;
+//  topOverlayText = tr("Open files using the \"File\" menu above");
 
   qtGreen  = QColor::fromCmykF(0.40, 0.0, 1.0, 0.0);
-  qtPurple = QColor::fromRgbF(1.0, 1.0, 1.0);
+  qtPurple = QColor::fromRgbF(1.0, 0.9, 1.0);
+  backgroundColor = QColor::fromRgbF(0.9, 0.8, 1.0).dark();
 
   setAutoFillBackground(false);
 }
@@ -226,6 +227,11 @@ void GLWidget::updateExtent()
   zmin = 0.0;
 }
 
+void GLWidget::setBackgroundColor(QColor color) {
+   backgroundColor = color;
+   updateGL();
+}
+
 void GLWidget::initializeGL()
 {
   // GLUT wants argc and argv... qt obscures these in the class
@@ -234,7 +240,7 @@ void GLWidget::initializeGL()
   const char* argv[] = {"Sloppy","glut"};
   glutInit(&argc, (char**)argv);
 
-  qglClearColor(qtPurple.dark());
+  qglClearColor(backgroundColor);
 
   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
   glColorMaterial ( GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
@@ -249,8 +255,8 @@ void GLWidget::initializeGL()
   static GLfloat global_ambient[] = { 1.0f, 1.0f, 1.0f, 1.0f };
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
   // Lights
-  static GLfloat lightPosition1[4] = { 4.0,  1.0, 10.0, 0.0 };
-  static GLfloat lightPosition2[4] = { -4.0, -1.0, 10.0, 0.0 };
+//  static GLfloat lightPosition1[4] = { 4.0,  1.0, 10.0, 0.0 };
+//  static GLfloat lightPosition2[4] = { -4.0, -1.0, 10.0, 0.0 };
   //glLightfv(GL_LIGHT0, GL_POSITION, lightPosition1);
   //glLightfv(GL_LIGHT1, GL_POSITION, lightPosition2);
 
@@ -309,7 +315,7 @@ void GLWidget::initializeGL()
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
 
-    qglClearColor(qtPurple.dark());
+    qglClearColor(backgroundColor);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -400,21 +406,21 @@ void GLWidget::initializeGL()
     }
   } 
 
-  if (topOverlayOn) {
-    glShadeModel(GL_FLAT);
-    glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_LIGHTING);
-    glDisable(GL_LIGHT0);
+//  if (topOverlayOn) {
+//    glShadeModel(GL_FLAT);
+//    glDisable(GL_CULL_FACE);
+//    glDisable(GL_DEPTH_TEST);
+//    glDisable(GL_LIGHTING);
+//    glDisable(GL_LIGHT0);
 
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
+//    glMatrixMode(GL_MODELVIEW);
+//    glPopMatrix();
     
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    drawInstructions(&painter);
-    painter.end();
-  }
+//    QPainter painter(this);
+//    painter.setRenderHint(QPainter::Antialiasing);
+//    drawInstructions(&painter);
+//    painter.end();
+//  }
 }
 
 void GLWidget::resizeGL(int width, int height)
@@ -458,37 +464,37 @@ void GLWidget::wheelEvent(QWheelEvent *event)
  }
 }
 
-void GLWidget::drawInstructions(QPainter *painter)
-{
-  QString text = topOverlayText;
-  QFont newFont("Helvetica", 9);
-  painter->setFont(newFont);
-  QFontMetrics metrics = QFontMetrics(font());
-  int border = qMax(4, metrics.leading());
+//void GLWidget::drawInstructions(QPainter *painter)
+//{
+//  QString text = topOverlayText;
+//  QFont newFont("Helvetica", 9);
+//  painter->setFont(newFont);
+//  QFontMetrics metrics = QFontMetrics(font());
+//  int border = qMax(4, metrics.leading());
 
-  QRect rect = metrics.boundingRect(0, 0, width() - 2*border, int(height()*0.135),
-    Qt::AlignCenter | Qt::TextWordWrap, text);
+//  QRect rect = metrics.boundingRect(0, 0, width() - 2*border, int(height()*0.135),
+//    Qt::AlignCenter | Qt::TextWordWrap, text);
 
-  painter->setRenderHint(QPainter::TextAntialiasing);
-  painter->fillRect(QRect(0, 0, width(), rect.height() + 2*border),
-    QColor(0, 0, 0, 127));
-  painter->setPen(Qt::white);
-  painter->drawText((width() - rect.width())/2, border,
-    rect.width(), rect.height(),
-    Qt::AlignLeft | Qt::TextWordWrap, text);
-}
+//  painter->setRenderHint(QPainter::TextAntialiasing);
+//  painter->fillRect(QRect(0, 0, width(), rect.height() + 2*border),
+//    QColor(0, 0, 0, 127));
+//  painter->setPen(Qt::white);
+//  painter->drawText((width() - rect.width())/2, border,
+//    rect.width(), rect.height(),
+//    Qt::AlignLeft | Qt::TextWordWrap, text);
+//}
 
 
 
-void GLWidget::updateTopOverlay(QString newstring)
-{
-  if (newstring != "") {
-    topOverlayOn = true;
-    topOverlayText = newstring;
-  } else {
-    topOverlayOn = false;
-  }
-}
+//void GLWidget::updateTopOverlay(QString newstring)
+//{
+//  if (newstring != "") {
+//    topOverlayOn = true;
+//    topOverlayText = newstring;
+//  } else {
+//    topOverlayOn = false;
+//  }
+//}
 
 void angleToRGB(float angle, GLfloat *color)
 {

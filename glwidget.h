@@ -43,8 +43,9 @@ public slots:
   void updateExtent();
   void updateData(array_ptr data);
   void updateHeader(header_ptr header, array_ptr data);
-  void updateTopOverlay(QString newstring);
+//  void updateTopOverlay(QString newstring);
   void toggleDisplay(int cubes);
+  void setBackgroundColor(QColor color);
 
 signals:
   void xRotationChanged(int angle);
@@ -74,6 +75,7 @@ private:
   QPoint lastPos;
   QColor qtGreen;
   QColor qtPurple;
+  QColor backgroundColor;
 
   GLuint cone, cube, vector;
   int drawCubes;
@@ -107,11 +109,11 @@ private:
   array_ptr dataPtr;
   bool usePtr;
   bool displayOn;
-  bool topOverlayOn;
+//  bool topOverlayOn;
 
   // Overpainting
-  void drawInstructions(QPainter *painter);
-  QString topOverlayText;
+//  void drawInstructions(QPainter *painter);
+//  QString topOverlayText;
 };
 
 #endif

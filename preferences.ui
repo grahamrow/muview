@@ -10,10 +10,19 @@
     <height>329</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>Muview Preferences</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
@@ -225,9 +234,37 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="setBackgroundColor">
            <property name="text">
             <string>Set Background Color</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="colorBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="autoFillBackground">
+            <bool>true</bool>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Sunken</enum>
+           </property>
+           <property name="lineWidth">
+            <number>2</number>
            </property>
           </widget>
          </item>
@@ -263,8 +300,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>187</x>
-     <y>349</y>
+     <x>196</x>
+     <y>319</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -279,8 +316,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>255</x>
-     <y>349</y>
+     <x>264</x>
+     <y>319</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
@@ -295,12 +332,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>351</x>
-     <y>191</y>
+     <x>418</x>
+     <y>155</y>
     </hint>
     <hint type="destinationlabel">
-     <x>401</x>
-     <y>175</y>
+     <x>417</x>
+     <y>124</y>
     </hint>
    </hints>
   </connection>
@@ -311,12 +348,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>403</x>
-     <y>161</y>
+     <x>417</x>
+     <y>124</y>
     </hint>
     <hint type="destinationlabel">
-     <x>316</x>
-     <y>197</y>
+     <x>409</x>
+     <y>155</y>
     </hint>
    </hints>
   </connection>

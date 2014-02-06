@@ -12,10 +12,12 @@
 #include <QDebug>
 #include <QTimer>
 #include <QMap>
+#include <QColorDialog>
 
 #include "glwidget.h"
 #include "window.h"
 #include "ui_window.h"
+#include "ui_preferences.h"
 #include "OMFImport.h"
 #include "OMFHeader.h"
 #include "OMFContainer.h"
@@ -27,18 +29,16 @@ Window::Window(int argc, char *argv[]) :
     QMainWindow(NULL),
     ui(new Ui::Window)
 {
-//	QWidget *widget = new QWidget;
-//	setCentralWidget(widget);
-
     ui->setupUi(this);
 
 	// Cache size
 	cacheSize = 50;
 	cachePos  = 0;
 
-//	ui->viewport = new ui->viewport;
 	prefs = new Preferences(this);
     about = new AboutDialog(this);
+
+    connect(prefs, SIGNAL(finished(int)), this, SLOT(updatePrefs()));
 
     initSlider(ui->xSlider);
     initSlider(ui->ySlider);
@@ -63,55 +63,33 @@ Window::Window(int argc, char *argv[]) :
     connect(ui->zSpanSlider, SIGNAL(lowerValueChanged(int)), ui->viewport, SLOT(setZSliceLow(int)));
     connect(ui->zSpanSlider, SIGNAL(upperValueChanged(int)), ui->viewport, SLOT(setZSliceHigh(int)));
 
-//	QHBoxLayout *mainLayout = new QHBoxLayout;
-
-//	sliceGroupBox = new QGroupBox(tr("XYZ Slicing"));
-//	rotGroupBox   = new QGroupBox(tr("Rotation"));
-//	sliceGroupBox->setAlignment(Qt::AlignHCenter);
-//	rotGroupBox->setAlignment(Qt::AlignHCenter);
-
-//	QVBoxLayout *displayLayout = new QVBoxLayout;
-//	QHBoxLayout *sliceLayout   = new QHBoxLayout;
-//	QHBoxLayout *rotLayout     = new QHBoxLayout;
-
-	// Center display and animation bar
-//	animLabel  = new QLabel(tr("<i>Animation</i> timeline"));
-//	animLabel->setAlignment(Qt::AlignCenter);
-//	ui->animSlider = new QSlider(Qt::Horizontal);
     ui->animSlider->setRange(0, 10);
     ui->animSlider->setSingleStep(1);
     ui->animSlider->setPageStep(10);
     ui->animSlider->setTickInterval(2);
     ui->animSlider->setTickPosition(QSlider::TicksRight);
     ui->animSlider->setEnabled(false);
-//	animLabel->setFixedHeight(animLabel->sizeHint().height());
-//	displayLayout->addWidget(ui->viewport);
-//	displayLayout->addWidget(animLabel);
-//	displayLayout->addWidget(ui->animSlider);
 
-	// Slicing
-//	sliceLayout->addWidget(ui->xSpanSlider);
-//	sliceLayout->addWidget(ui->ySpanSlider);
-//	sliceLayout->addWidget(ui->zSpanSlider);
-//	sliceGroupBox->setLayout(sliceLayout);
-//	sliceGroupBox->setFixedWidth(120);
+    // Actions
+    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(openAbout()));
+    connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(openSettings()));
+    connect(ui->actionFiles, SIGNAL(triggered()), this, SLOT(openFiles()));
+    connect(ui->actionDir, SIGNAL(triggered()), this, SLOT(openDir()));
 
-	// Rotation
-//	rotLayout->addWidget(ui->xSlider);
-//	rotLayout->addWidget(ui->ySlider);
-//	rotLayout->addWidget(ui->zSlider);
-//	rotGroupBox->setLayout(rotLayout);
-//	rotGroupBox->setFixedWidth(120);
+    connect(ui->actionCubes,   SIGNAL(triggered()), this, SLOT(toggleDisplay()));
+    connect(ui->actionCones,   SIGNAL(triggered()), this, SLOT(toggleDisplay()));
+    connect(ui->actionVectors, SIGNAL(triggered()), this, SLOT(toggleDisplay()));
 
-	// Overall Layout
-//	mainLayout->addWidget(rotGroupBox);
-//	mainLayout->addLayout(displayLayout);
-//	mainLayout->addWidget(sliceGroupBox);
-//	widget->setLayout(mainLayout);
+    displayType = new QActionGroup(this);
+    displayType->addAction(ui->actionCubes);
+    displayType->addAction(ui->actionCones);
+    displayType->addAction(ui->actionVectors);
+    ui->actionCubes->setChecked(true);
 
-	// Main Window Related
-    createActions();
-//	createMenus();
+    signalMapper = new QSignalMapper(this);
+    signalMapper->setMapping (ui->actionFollow, "") ;
+    connect (signalMapper, SIGNAL(mapped(QString)), this, SLOT(watchDir(QString))) ;
+    connect(ui->actionFollow, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
     ui->xSlider->setValue(15 * 16);
     ui->ySlider->setValue(345 * 16);
@@ -234,36 +212,10 @@ void Window::keyPressEvent(QKeyEvent *e)
 	}
 }
 
-//void Window::createMenus()
-//{
-//	fileMenu = menuBar()->addMenu(tr("&File"));
-//	fileMenu->addAction(ui->actionFiles);
-//	fileMenu->addAction(ui->actionDir);
-//	fileMenu->addAction(ui->actionFollow);
-//	fileMenu->addSeparator();
-
-//	settingsMenu = menuBar()->addMenu(tr("&Settings"));
-
-//	helpMenu = menuBar()->addMenu(tr("&Help"));
-//	helpMenu->addAction(actionAbout);
-//	helpMenu->addSeparator();
-//	//helpMenu->addAction(webAct);
-
-//	settingsMenu->addAction(actionSettings);
-//	settingsMenu->addSeparator();
-//	settingsMenu->addAction(ui->actionCubes);
-//	settingsMenu->addAction(ui->actionCones);
-//	settingsMenu->addAction(ui->actionVectors);
-//}
-
-//void Window::about()
-//{
-//	//infoLabel->setText(tr("Invoked <b>Help|About</b>"));
-//	QMessageBox::about(this, tr("About Muview"),
-//											tr("<b>Muview</b> 0.9 \n<br>"
-//												"Mumax visualization tool written in OpenGL and Qt<br>"
-//												"<br>Created by Graham Rowlands 2014."));
-//}
+void Window::updatePrefs() {
+//    qDebug() << prefs->getBackgroundColor().name();
+    ui->viewport->setBackgroundColor(prefs->getBackgroundColor());
+}
 
 void Window::openSettings()
 {
@@ -286,7 +238,8 @@ void Window::processFilenames() {
 
 void Window::gotoFrontOfCache() {
     ui->viewport->updateHeader(omfHeaderCache.front(), omfCache.front());
-    ui->viewport->updateTopOverlay(filenames.front());
+    ui->statusbar->showMessage(filenames.front());
+//    ui->viewport->updateTopOverlay(filenames.front());
     ui->viewport->updateData(omfCache.front());
 	cachePos = 0;
     adjustAnimSlider(false); // Go to end of slider
@@ -294,7 +247,7 @@ void Window::gotoFrontOfCache() {
 
 void Window::gotoBackOfCache() {
     ui->viewport->updateHeader(omfHeaderCache.back(), omfCache.back());
-    ui->viewport->updateTopOverlay(filenames.back());
+    ui->statusbar->showMessage(filenames.back());
     ui->viewport->updateData(omfCache.back());
 	cachePos = filenames.size()-1;
     adjustAnimSlider(true); // Go to start of slider
@@ -326,7 +279,7 @@ void Window::openFiles()
 		clearOMFCache();
 		clearHeaderCache();
 		processFilenames();
-		gotoBackOfCache();
+        gotoFrontOfCache();
 	}
 }
 
@@ -434,14 +387,14 @@ void Window::updateDisplayData(int index)
 	if (index < filenames.size()) {
 		//qDebug() << QString("In Cache Range") << index << cachePos;
 		// Update the top overlay
-        ui->viewport->updateTopOverlay(displayNames[index]);
+        ui->statusbar->showMessage(displayNames[index]);
 		// Update the Display
 		//qDebug() << QString("Current cache size") << omfCache.size();
         ui->viewport->updateHeader(omfHeaderCache.at(index-cachePos), omfCache.at(index-cachePos));
         ui->viewport->updateData(omfCache.at(index-cachePos));
 	} else {
 			//qDebug() << QString("Out of Cache Range!!!!") << index << cachePos;
-        ui->viewport->updateTopOverlay(QString("Don't scroll so erratically..."));
+        ui->statusbar->showMessage(QString("Don't scroll so erratically..."));
 	}
 }
 
@@ -530,7 +483,7 @@ void Window::watchDir(const QString& str)
             ui->viewport->updateData(omfCache.back());
 			
 			// Update the top overlay
-            ui->viewport->updateTopOverlay(displayNames.back());
+            ui->statusbar->showMessage(displayNames.back());
 
 			// Refresh the animation bar
             adjustAnimSlider(true);
@@ -550,47 +503,6 @@ void Window::toggleDisplay() {
 	} else {
         ui->viewport->toggleDisplay(2);
 	}
-}
-
-
-void Window::createActions()
-{
-//    actionAbout = new QAction(tr("&About Muview"), this);
-    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(openAbout()));
-
-//    actionSettings = new QAction(tr("&Muview Preferences"), this);
-    connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(openSettings()));
-
-//    ui->actionCubes   = new QAction(tr("&Display Cubes"), this);
-//    ui->actionCones   = new QAction(tr("&Display Cones"), this);
-//    ui->actionVectors = new QAction(tr("&Display Vectors"), this);
-//    ui->actionCubes->setCheckable(true);
-    ui->actionCubes->setChecked(true);
-//    ui->actionCones->setCheckable(true);
-//    ui->actionVectors->setCheckable(true);
-    connect(ui->actionCubes,   SIGNAL(triggered()), this, SLOT(toggleDisplay()));
-    connect(ui->actionCones,   SIGNAL(triggered()), this, SLOT(toggleDisplay()));
-    connect(ui->actionVectors, SIGNAL(triggered()), this, SLOT(toggleDisplay()));
-    displayType = new QActionGroup(this);
-    displayType->addAction(ui->actionCubes);
-    displayType->addAction(ui->actionCones);
-    displayType->addAction(ui->actionVectors);
-
-//    ui->actionFiles  = new QAction(tr("&Open File(s)"), this);
-//	ui->actionFiles->setShortcuts(QKeySequence::Open);
-    connect(ui->actionFiles, SIGNAL(triggered()), this, SLOT(openFiles()));
-
-//    ui->actionDir  = new QAction(tr("&Open Dir"), this);
-//	ui->actionDir->setShortcut( QKeySequence(Qt::CTRL + Qt::Key_D) );
-    connect(ui->actionDir, SIGNAL(triggered()), this, SLOT(openDir()));
-
-    signalMapper = new QSignalMapper(this);
-//    ui->actionFollow  = new QAction(tr("&Follow Dir"), this);
-//	ui->actionFollow->setShortcut( QKeySequence(Qt::CTRL + Qt::Key_F) );
-    connect(ui->actionFollow, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-    signalMapper->setMapping (ui->actionFollow, "") ;
-	connect (signalMapper, SIGNAL(mapped(QString)), this, SLOT(watchDir(QString))) ;
 }
 
 Window::~Window()
