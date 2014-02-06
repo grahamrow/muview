@@ -10,6 +10,7 @@
 
 // Other parts of the interface
 #include "preferences.h"
+#include "aboutdialog.h"
 
 // For reading OMF files
 #include "OMFContainer.h"
@@ -18,29 +19,33 @@
 
 typedef boost::shared_ptr<OMFHeader> header_ptr;
 
-// General widget stuff 
+// Forward Definitions
 class QSlider;
-class GLWidget;
+//class GLWidget;
 class QxtSpanSlider;
-class QGroupBox;
+class QSignalMapper;
+//class QGroupBox;
 
 // Main Window Stuff
-class QAction;
+//class QAction;
 class QActionGroup;
-class QLabel;
-class QMenu;
+//class QLabel;
+//class QMenu;
 
 // Other
 class QFileSystemWatcher;
-//class QString;
-// class QDateTime;
+
+namespace Ui {
+    class Window;
+}
 
 class Window : public QMainWindow
 {
   Q_OBJECT
 
-  public:
-  Window(int argc, char *argv[]);
+public:
+  explicit Window(int argc, char *argv[]);
+  ~Window();
 
 protected:
   void keyPressEvent(QKeyEvent *event);
@@ -52,62 +57,66 @@ private slots:
   void watchDir(const QString& str);
   void toggleDisplay();
   void updateWatchedFiles(const QString& str);
-  void settings();
-  void about();
+  void openSettings();
+  void openAbout();
   void updateDisplayData(int index);
   
 private:
   // Main Window Stuff
+  Ui::Window *ui;
   void createActions();
   void createMenus();
   void adjustAnimSlider(bool back);
 
-  QMenu *fileMenu;
-  QMenu *settingsMenu;
-  QMenu *helpMenu;
+//  QMenu *fileMenu;
+//  QMenu *settingsMenu;
+//  QMenu *helpMenu;
   
-  QAction *openFilesAct;
-  QAction *openDirAct;
-  QAction *attachToMumax;
-  QAction *settingsAct;
-  QAction *aboutAct;
-  QAction *watchDirAct;
+//  QAction *openFilesAct;
+//  QAction *openDirAct;
+//  QAction *attachToMumax;
+//  QAction *settingsAct;
+//  QAction *aboutAct;
+//  QAction *watchDirAct;
 
   QActionGroup *displayType;
-  QAction *conesAct;
-  QAction *cubesAct;
-  QAction *vectorsAct;
+//  QAction *conesAct;
+//  QAction *cubesAct;
+//  QAction *vectorsAct;
   
-  QAction *scaleByMagnitude;
+//  QAction *scaleByMagnitude;
   //QAction *webAct;
 
   // Preferences window;
   Preferences *prefs;
+  AboutDialog *about;
 
-  // Other Stuff
-  QSlider *createSlider();
-  QxtSpanSlider *createSpanSlider();
+  // Convenience Functions for Sliders
+  void initSlider(QSlider *slider);
+  void initSpanSlider(QxtSpanSlider *slider);
 
-  QGroupBox *sliceGroupBox;
-  QGroupBox *rotGroupBox;
+//  QGroupBox *sliceGroupBox;
+//  QGroupBox *rotGroupBox;
 
-  GLWidget *glWidget;
+//  GLWidget *glWidget;
 
-  QSlider *xSlider;
-  QSlider *ySlider;
-  QSlider *zSlider;
+//  QSlider *xSlider;
+//  QSlider *ySlider;
+//  QSlider *zSlider;
 
-  QSlider *animSlider;
-  QLabel *animLabel;
+//  QSlider *animSlider;
+//  QLabel *animLabel;
 
-  QxtSpanSlider *xSpanSlider;
-  QxtSpanSlider *ySpanSlider;
-  QxtSpanSlider *zSpanSlider;
+//  QxtSpanSlider *xSpanSlider;
+//  QxtSpanSlider *ySpanSlider;
+//  QxtSpanSlider *zSpanSlider;
   
+  // ============================================================
   // Storage and caching
   // A finite number of files, as governed by cacheSize, will
   // reside in memory at a given time, otherwise we will choke
   // the system on large output directories.
+  // ============================================================
 
   int cacheSize; // Maxmimum cache size
   int cachePos;  // Current location w.r.t list of all filenames
@@ -126,6 +135,7 @@ private:
   QString dirString;
 
   // Watch dirs
+  QSignalMapper* signalMapper;
   QFileSystemWatcher *watcher;
   QMap<QString, QDateTime> watchedFiles;
   bool noFollowUpdate;

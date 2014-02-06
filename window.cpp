@@ -9,12 +9,13 @@
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QSignalMapper>
-#include "glwidget.h"
-#include "window.h"
 #include <QDebug>
 #include <QTimer>
 #include <QMap>
 
+#include "glwidget.h"
+#include "window.h"
+#include "ui_window.h"
 #include "OMFImport.h"
 #include "OMFHeader.h"
 #include "OMFContainer.h"
@@ -22,98 +23,103 @@
 
 struct OMFImport;
 
-Window::Window(int argc, char *argv[])
+Window::Window(int argc, char *argv[]) :
+    QMainWindow(NULL),
+    ui(new Ui::Window)
 {
-	QWidget *widget = new QWidget;
-	setCentralWidget(widget);
+//	QWidget *widget = new QWidget;
+//	setCentralWidget(widget);
+
+    ui->setupUi(this);
 
 	// Cache size
 	cacheSize = 50;
 	cachePos  = 0;
 
-	glWidget = new GLWidget;
+//	ui->viewport = new ui->viewport;
 	prefs = new Preferences(this);
+    about = new AboutDialog(this);
 
-	xSlider = createSlider();
-	ySlider = createSlider();
-	zSlider = createSlider();
-	xSpanSlider = createSpanSlider();
-	ySpanSlider = createSpanSlider();
-	zSpanSlider = createSpanSlider();
+    initSlider(ui->xSlider);
+    initSlider(ui->ySlider);
+    initSlider(ui->zSlider);
+    initSpanSlider(ui->xSpanSlider);
+    initSpanSlider(ui->ySpanSlider);
+    initSpanSlider(ui->zSpanSlider);
 
 	// Rotation
-	connect(xSlider,  SIGNAL(valueChanged(int)), glWidget, SLOT(setXRotation(int)));
-	connect(glWidget, SIGNAL(xRotationChanged(int)), xSlider, SLOT(setValue(int)));
-	connect(ySlider,  SIGNAL(valueChanged(int)), glWidget, SLOT(setYRotation(int)));
-	connect(glWidget, SIGNAL(yRotationChanged(int)), ySlider, SLOT(setValue(int)));
-	connect(zSlider,  SIGNAL(valueChanged(int)), glWidget, SLOT(setZRotation(int)));
-	connect(glWidget, SIGNAL(zRotationChanged(int)), zSlider, SLOT(setValue(int)));
+    connect(ui->xSlider,  SIGNAL(valueChanged(int)),     ui->viewport, SLOT(setXRotation(int)));
+    connect(ui->viewport, SIGNAL(xRotationChanged(int)), ui->xSlider, SLOT(setValue(int)));
+    connect(ui->ySlider,  SIGNAL(valueChanged(int)),     ui->viewport, SLOT(setYRotation(int)));
+    connect(ui->viewport, SIGNAL(yRotationChanged(int)), ui->ySlider, SLOT(setValue(int)));
+    connect(ui->zSlider,  SIGNAL(valueChanged(int)),     ui->viewport, SLOT(setZRotation(int)));
+    connect(ui->viewport, SIGNAL(zRotationChanged(int)), ui->zSlider, SLOT(setValue(int)));
 
 	// Slicing
-	connect(xSpanSlider, SIGNAL(lowerValueChanged(int)), glWidget, SLOT(setXSliceLow(int)));
-	connect(xSpanSlider, SIGNAL(upperValueChanged(int)), glWidget, SLOT(setXSliceHigh(int)));
-	connect(ySpanSlider, SIGNAL(lowerValueChanged(int)), glWidget, SLOT(setYSliceLow(int)));
-	connect(ySpanSlider, SIGNAL(upperValueChanged(int)), glWidget, SLOT(setYSliceHigh(int)));
-	connect(zSpanSlider, SIGNAL(lowerValueChanged(int)), glWidget, SLOT(setZSliceLow(int)));
-	connect(zSpanSlider, SIGNAL(upperValueChanged(int)), glWidget, SLOT(setZSliceHigh(int)));
+    connect(ui->xSpanSlider, SIGNAL(lowerValueChanged(int)), ui->viewport, SLOT(setXSliceLow(int)));
+    connect(ui->xSpanSlider, SIGNAL(upperValueChanged(int)), ui->viewport, SLOT(setXSliceHigh(int)));
+    connect(ui->ySpanSlider, SIGNAL(lowerValueChanged(int)), ui->viewport, SLOT(setYSliceLow(int)));
+    connect(ui->ySpanSlider, SIGNAL(upperValueChanged(int)), ui->viewport, SLOT(setYSliceHigh(int)));
+    connect(ui->zSpanSlider, SIGNAL(lowerValueChanged(int)), ui->viewport, SLOT(setZSliceLow(int)));
+    connect(ui->zSpanSlider, SIGNAL(upperValueChanged(int)), ui->viewport, SLOT(setZSliceHigh(int)));
 
-	QHBoxLayout *mainLayout = new QHBoxLayout;
+//	QHBoxLayout *mainLayout = new QHBoxLayout;
 
-	sliceGroupBox = new QGroupBox(tr("XYZ Slicing"));
-	rotGroupBox   = new QGroupBox(tr("Rotation"));
-	sliceGroupBox->setAlignment(Qt::AlignHCenter);
-	rotGroupBox->setAlignment(Qt::AlignHCenter);
+//	sliceGroupBox = new QGroupBox(tr("XYZ Slicing"));
+//	rotGroupBox   = new QGroupBox(tr("Rotation"));
+//	sliceGroupBox->setAlignment(Qt::AlignHCenter);
+//	rotGroupBox->setAlignment(Qt::AlignHCenter);
 
-	QVBoxLayout *displayLayout = new QVBoxLayout;
-	QHBoxLayout *sliceLayout   = new QHBoxLayout;
-	QHBoxLayout *rotLayout     = new QHBoxLayout;
+//	QVBoxLayout *displayLayout = new QVBoxLayout;
+//	QHBoxLayout *sliceLayout   = new QHBoxLayout;
+//	QHBoxLayout *rotLayout     = new QHBoxLayout;
 
 	// Center display and animation bar
-	animLabel  = new QLabel(tr("<i>Animation</i> timeline"));
-	animLabel->setAlignment(Qt::AlignCenter);
-	animSlider = new QSlider(Qt::Horizontal);
-	animSlider->setRange(0, 10);
-	animSlider->setSingleStep(1);
-	animSlider->setPageStep(10);
-	animSlider->setTickInterval(2);
-	animSlider->setTickPosition(QSlider::TicksRight);
-	animSlider->setEnabled(false);
-	animLabel->setFixedHeight(animLabel->sizeHint().height());
-	displayLayout->addWidget(glWidget);
-	displayLayout->addWidget(animLabel);
-	displayLayout->addWidget(animSlider);
+//	animLabel  = new QLabel(tr("<i>Animation</i> timeline"));
+//	animLabel->setAlignment(Qt::AlignCenter);
+//	ui->animSlider = new QSlider(Qt::Horizontal);
+    ui->animSlider->setRange(0, 10);
+    ui->animSlider->setSingleStep(1);
+    ui->animSlider->setPageStep(10);
+    ui->animSlider->setTickInterval(2);
+    ui->animSlider->setTickPosition(QSlider::TicksRight);
+    ui->animSlider->setEnabled(false);
+//	animLabel->setFixedHeight(animLabel->sizeHint().height());
+//	displayLayout->addWidget(ui->viewport);
+//	displayLayout->addWidget(animLabel);
+//	displayLayout->addWidget(ui->animSlider);
 
 	// Slicing
-	sliceLayout->addWidget(xSpanSlider);
-	sliceLayout->addWidget(ySpanSlider);
-	sliceLayout->addWidget(zSpanSlider);
-	sliceGroupBox->setLayout(sliceLayout);
-	sliceGroupBox->setFixedWidth(120);
+//	sliceLayout->addWidget(ui->xSpanSlider);
+//	sliceLayout->addWidget(ui->ySpanSlider);
+//	sliceLayout->addWidget(ui->zSpanSlider);
+//	sliceGroupBox->setLayout(sliceLayout);
+//	sliceGroupBox->setFixedWidth(120);
 
 	// Rotation
-	rotLayout->addWidget(xSlider);
-	rotLayout->addWidget(ySlider);
-	rotLayout->addWidget(zSlider);
-	rotGroupBox->setLayout(rotLayout);
-	rotGroupBox->setFixedWidth(120);
+//	rotLayout->addWidget(ui->xSlider);
+//	rotLayout->addWidget(ui->ySlider);
+//	rotLayout->addWidget(ui->zSlider);
+//	rotGroupBox->setLayout(rotLayout);
+//	rotGroupBox->setFixedWidth(120);
 
 	// Overall Layout
-	mainLayout->addWidget(rotGroupBox);
-	mainLayout->addLayout(displayLayout);
-	mainLayout->addWidget(sliceGroupBox);
-	widget->setLayout(mainLayout);
+//	mainLayout->addWidget(rotGroupBox);
+//	mainLayout->addLayout(displayLayout);
+//	mainLayout->addWidget(sliceGroupBox);
+//	widget->setLayout(mainLayout);
 
 	// Main Window Related
-	createActions();
-	createMenus();
+    createActions();
+//	createMenus();
 
-	xSlider->setValue(15 * 16);
-	ySlider->setValue(345 * 16);
-	zSlider->setValue(0 * 16);
+    ui->xSlider->setValue(15 * 16);
+    ui->ySlider->setValue(345 * 16);
+    ui->zSlider->setValue(0 * 16);
 	setWindowTitle(tr("MuView 0.9"));
 
 	// Data, don't connect until we are ready (probably still not ready here)...
-	connect(animSlider, SIGNAL(valueChanged(int)), this, SLOT(updateDisplayData(int)));
+    connect(ui->animSlider, SIGNAL(valueChanged(int)), this, SLOT(updateDisplayData(int)));
 	
 	// Load files from command line if supplied
 	if (argc > 1) {
@@ -161,34 +167,32 @@ Window::Window(int argc, char *argv[])
 
 			processFilenames();
 			gotoFrontOfCache();
-			adjustAnimSlider(false);  // Refresh the animation bar
+            adjustAnimSlider(false);  // Refresh the animation bar
 		}
 	}
 }
 
-QxtSpanSlider *Window::createSpanSlider()
+void Window::initSpanSlider(QxtSpanSlider *slider)
 {
-	QxtSpanSlider *spanSlider = new QxtSpanSlider(Qt::Vertical);
-	spanSlider->setRange(0 *16, 100 * 16);
-	spanSlider->setSingleStep(16);
-	spanSlider->setPageStep(15 * 16);
-	spanSlider->setTickInterval(15 * 16);
-	spanSlider->setTickPosition(QSlider::TicksRight);
-	spanSlider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
-	spanSlider->setLowerValue(0*16);
-	spanSlider->setUpperValue(100*16);
-	return spanSlider;
+//	QxtSpanSlider *spanSlider = new QxtSpanSlider(Qt::Vertical);
+    slider->setRange(0 *16, 100 * 16);
+    slider->setSingleStep(16);
+    slider->setPageStep(15 * 16);
+    slider->setTickInterval(15 * 16);
+    slider->setTickPosition(QSlider::TicksRight);
+    slider->setHandleMovementMode(QxtSpanSlider::NoOverlapping);
+    slider->setLowerValue(0*16);
+    slider->setUpperValue(100*16);
 }
 
-QSlider *Window::createSlider()
+void Window::initSlider(QSlider *slider)
 {
-	QSlider *slider = new QSlider(Qt::Vertical);
+//	QSlider *slider = new QSlider(Qt::Vertical);
 	slider->setRange(0, 360 * 16);
 	slider->setSingleStep(16);
 	slider->setPageStep(15 * 16);
 	slider->setTickInterval(15 * 16);
-	slider->setTickPosition(QSlider::TicksRight);
-	return slider;
+    slider->setTickPosition(QSlider::TicksRight);
 }
 
 void Window::adjustAnimSlider(bool back)
@@ -196,19 +200,19 @@ void Window::adjustAnimSlider(bool back)
 	int numFiles = filenames.size();
 	//qDebug() << QString("Updating Animation Slider to size") << numFiles;
 	if (numFiles > 1) {
-		animSlider->setRange(0, numFiles-1);
-		animSlider->setSingleStep(1);
-		animSlider->setPageStep(10);
-		animSlider->setTickInterval(2);
-		animSlider->setTickPosition(QSlider::TicksRight);
-		animSlider->setEnabled(true);
+        ui->animSlider->setRange(0, numFiles-1);
+        ui->animSlider->setSingleStep(1);
+        ui->animSlider->setPageStep(10);
+        ui->animSlider->setTickInterval(2);
+        ui->animSlider->setTickPosition(QSlider::TicksRight);
+        ui->animSlider->setEnabled(true);
 		if (back) {
-			animSlider->setSliderPosition(numFiles-1);
+            ui->animSlider->setSliderPosition(numFiles-1);
 		} else {
-			animSlider->setSliderPosition(0);
+            ui->animSlider->setSliderPosition(0);
 		}
 	} else {
-		animSlider->setEnabled(false);
+        ui->animSlider->setEnabled(false);
 	}
 	//qDebug() << QString("Updated Animation Slider to size") << numFiles;
 }
@@ -230,40 +234,45 @@ void Window::keyPressEvent(QKeyEvent *e)
 	}
 }
 
-void Window::createMenus()
-{
-	fileMenu = menuBar()->addMenu(tr("&File"));
-	fileMenu->addAction(openFilesAct);
-	fileMenu->addAction(openDirAct);
-	fileMenu->addAction(watchDirAct);
-	fileMenu->addSeparator();
+//void Window::createMenus()
+//{
+//	fileMenu = menuBar()->addMenu(tr("&File"));
+//	fileMenu->addAction(ui->actionFiles);
+//	fileMenu->addAction(ui->actionDir);
+//	fileMenu->addAction(ui->actionFollow);
+//	fileMenu->addSeparator();
 
-	settingsMenu = menuBar()->addMenu(tr("&Settings"));
+//	settingsMenu = menuBar()->addMenu(tr("&Settings"));
 
-	helpMenu = menuBar()->addMenu(tr("&Help"));
-	helpMenu->addAction(aboutAct);
-	helpMenu->addSeparator();
-	//helpMenu->addAction(webAct);
+//	helpMenu = menuBar()->addMenu(tr("&Help"));
+//	helpMenu->addAction(actionAbout);
+//	helpMenu->addSeparator();
+//	//helpMenu->addAction(webAct);
 
-	settingsMenu->addAction(settingsAct);
-	settingsMenu->addSeparator();
-	settingsMenu->addAction(cubesAct);
-	settingsMenu->addAction(conesAct);
-	settingsMenu->addAction(vectorsAct);
-}
+//	settingsMenu->addAction(actionSettings);
+//	settingsMenu->addSeparator();
+//	settingsMenu->addAction(ui->actionCubes);
+//	settingsMenu->addAction(ui->actionCones);
+//	settingsMenu->addAction(ui->actionVectors);
+//}
 
-void Window::about()
-{
-	//infoLabel->setText(tr("Invoked <b>Help|About</b>"));
-	QMessageBox::about(this, tr("About Muview"),
-											tr("<b>Muview</b> 0.9 \n<br>"
-												"Mumax visualization tool written in OpenGL and Qt<br>"
-												"<br>Created by Graham Rowlands 2014."));
-}
+//void Window::about()
+//{
+//	//infoLabel->setText(tr("Invoked <b>Help|About</b>"));
+//	QMessageBox::about(this, tr("About Muview"),
+//											tr("<b>Muview</b> 0.9 \n<br>"
+//												"Mumax visualization tool written in OpenGL and Qt<br>"
+//												"<br>Created by Graham Rowlands 2014."));
+//}
 
-void Window::settings()
+void Window::openSettings()
 {
 	prefs->exec();
+}
+
+void Window::openAbout()
+{
+    about->exec();
 }
 
 void Window::processFilenames() {
@@ -276,19 +285,19 @@ void Window::processFilenames() {
 }
 
 void Window::gotoFrontOfCache() {
-	glWidget->updateHeader(omfHeaderCache.front(), omfCache.front());
-	glWidget->updateTopOverlay(filenames.front());
-	glWidget->updateData(omfCache.front());
+    ui->viewport->updateHeader(omfHeaderCache.front(), omfCache.front());
+    ui->viewport->updateTopOverlay(filenames.front());
+    ui->viewport->updateData(omfCache.front());
 	cachePos = 0;
-	adjustAnimSlider(false); // Go to end of slider
+    adjustAnimSlider(false); // Go to end of slider
 }
 
 void Window::gotoBackOfCache() {
-	glWidget->updateHeader(omfHeaderCache.back(), omfCache.back());
-	glWidget->updateTopOverlay(filenames.back());
-	glWidget->updateData(omfCache.back());
+    ui->viewport->updateHeader(omfHeaderCache.back(), omfCache.back());
+    ui->viewport->updateTopOverlay(filenames.back());
+    ui->viewport->updateData(omfCache.back());
 	cachePos = filenames.size()-1;
-	adjustAnimSlider(true); // Go to start of slider
+    adjustAnimSlider(true); // Go to start of slider
 }
 
 void Window::clearHeaderCache() {
@@ -425,14 +434,14 @@ void Window::updateDisplayData(int index)
 	if (index < filenames.size()) {
 		//qDebug() << QString("In Cache Range") << index << cachePos;
 		// Update the top overlay
-		glWidget->updateTopOverlay(displayNames[index]);
+        ui->viewport->updateTopOverlay(displayNames[index]);
 		// Update the Display
 		//qDebug() << QString("Current cache size") << omfCache.size();
-		glWidget->updateHeader(omfHeaderCache.at(index-cachePos), omfCache.at(index-cachePos));
-		glWidget->updateData(omfCache.at(index-cachePos));
+        ui->viewport->updateHeader(omfHeaderCache.at(index-cachePos), omfCache.at(index-cachePos));
+        ui->viewport->updateData(omfCache.at(index-cachePos));
 	} else {
 			//qDebug() << QString("Out of Cache Range!!!!") << index << cachePos;
-		glWidget->updateTopOverlay(QString("Don't scroll so erratically..."));
+        ui->viewport->updateTopOverlay(QString("Don't scroll so erratically..."));
 	}
 }
 
@@ -517,14 +526,14 @@ void Window::watchDir(const QString& str)
 			omfCache.push_back(readOMF(filenames.last().toStdString(), *header));
 
 			// Update the Display with the first element
-			glWidget->updateHeader(omfHeaderCache.back(), omfCache.back());
-			glWidget->updateData(omfCache.back());
+            ui->viewport->updateHeader(omfHeaderCache.back(), omfCache.back());
+            ui->viewport->updateData(omfCache.back());
 			
 			// Update the top overlay
-			glWidget->updateTopOverlay(displayNames.back());
+            ui->viewport->updateTopOverlay(displayNames.back());
 
 			// Refresh the animation bar
-			adjustAnimSlider(true);
+            adjustAnimSlider(true);
 		}
 		// Now the callbacks
 		QObject::connect(watcher, SIGNAL(directoryChanged(QString)),
@@ -534,52 +543,57 @@ void Window::watchDir(const QString& str)
 }
 
 void Window::toggleDisplay() {
-	if (cubesAct->isChecked()) {
-		glWidget->toggleDisplay(0);
-	} else if (conesAct->isChecked()) {
-		glWidget->toggleDisplay(1);
+    if (ui->actionCubes->isChecked()) {
+        ui->viewport->toggleDisplay(0);
+    } else if (ui->actionCones->isChecked()) {
+        ui->viewport->toggleDisplay(1);
 	} else {
-		glWidget->toggleDisplay(2);
+        ui->viewport->toggleDisplay(2);
 	}
 }
 
 
 void Window::createActions()
 {
-	aboutAct = new QAction(tr("&About Muview"), this);
-	connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+//    actionAbout = new QAction(tr("&About Muview"), this);
+    connect(ui->actionAbout, SIGNAL(triggered()), this, SLOT(openAbout()));
 
-	settingsAct = new QAction(tr("&Muview Preferences"), this);
-	connect(settingsAct, SIGNAL(triggered()), this, SLOT(settings()));
+//    actionSettings = new QAction(tr("&Muview Preferences"), this);
+    connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(openSettings()));
 
-	cubesAct   = new QAction(tr("&Display Cubes"), this);
-	conesAct   = new QAction(tr("&Display Cones"), this);
-	vectorsAct = new QAction(tr("&Display Vectors"), this);
-	cubesAct->setCheckable(true);
-	cubesAct->setChecked(true);
-	conesAct->setCheckable(true);
-	vectorsAct->setCheckable(true);
-	connect(cubesAct,   SIGNAL(triggered()), this, SLOT(toggleDisplay()));
-	connect(conesAct,   SIGNAL(triggered()), this, SLOT(toggleDisplay()));
-	connect(vectorsAct, SIGNAL(triggered()), this, SLOT(toggleDisplay()));
-	displayType = new QActionGroup(this);
-	displayType->addAction(cubesAct);
-	displayType->addAction(conesAct);
-	displayType->addAction(vectorsAct);
+//    ui->actionCubes   = new QAction(tr("&Display Cubes"), this);
+//    ui->actionCones   = new QAction(tr("&Display Cones"), this);
+//    ui->actionVectors = new QAction(tr("&Display Vectors"), this);
+//    ui->actionCubes->setCheckable(true);
+    ui->actionCubes->setChecked(true);
+//    ui->actionCones->setCheckable(true);
+//    ui->actionVectors->setCheckable(true);
+    connect(ui->actionCubes,   SIGNAL(triggered()), this, SLOT(toggleDisplay()));
+    connect(ui->actionCones,   SIGNAL(triggered()), this, SLOT(toggleDisplay()));
+    connect(ui->actionVectors, SIGNAL(triggered()), this, SLOT(toggleDisplay()));
+    displayType = new QActionGroup(this);
+    displayType->addAction(ui->actionCubes);
+    displayType->addAction(ui->actionCones);
+    displayType->addAction(ui->actionVectors);
 
-	openFilesAct  = new QAction(tr("&Open File(s)"), this);
-	openFilesAct->setShortcuts(QKeySequence::Open);
-	connect(openFilesAct, SIGNAL(triggered()), this, SLOT(openFiles()));
+//    ui->actionFiles  = new QAction(tr("&Open File(s)"), this);
+//	ui->actionFiles->setShortcuts(QKeySequence::Open);
+    connect(ui->actionFiles, SIGNAL(triggered()), this, SLOT(openFiles()));
 
-	openDirAct  = new QAction(tr("&Open Dir"), this);
-	openDirAct->setShortcut( QKeySequence(Qt::CTRL + Qt::Key_D) );
-	connect(openDirAct, SIGNAL(triggered()), this, SLOT(openDir()));
+//    ui->actionDir  = new QAction(tr("&Open Dir"), this);
+//	ui->actionDir->setShortcut( QKeySequence(Qt::CTRL + Qt::Key_D) );
+    connect(ui->actionDir, SIGNAL(triggered()), this, SLOT(openDir()));
 
-	QSignalMapper* signalMapper = new QSignalMapper (this);
-	watchDirAct  = new QAction(tr("&Follow Dir"), this);
-	watchDirAct->setShortcut( QKeySequence(Qt::CTRL + Qt::Key_F) );
-	connect(watchDirAct, SIGNAL(triggered()), signalMapper, SLOT(map()));
-	signalMapper->setMapping (watchDirAct, "") ;
+    signalMapper = new QSignalMapper(this);
+//    ui->actionFollow  = new QAction(tr("&Follow Dir"), this);
+//	ui->actionFollow->setShortcut( QKeySequence(Qt::CTRL + Qt::Key_F) );
+    connect(ui->actionFollow, SIGNAL(triggered()), signalMapper, SLOT(map()));
+
+    signalMapper->setMapping (ui->actionFollow, "") ;
 	connect (signalMapper, SIGNAL(mapped(QString)), this, SLOT(watchDir(QString))) ;
 }
 
+Window::~Window()
+{
+    delete ui;
+}

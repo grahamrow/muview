@@ -9,8 +9,12 @@ INCLUDEPATH += libomf
 
 # Files and Targets
 HEADERS = glwidget.h window.h \
-    preferences.h qxtspanslider.h qxtspanslider_p.h analysis.h
+    preferences.h qxtspanslider.h qxtspanslider_p.h analysis.h \
+    aboutdialog.h
 SOURCES = glwidget.cpp main.cpp window.cpp \ 
-    preferences.cpp qxtspanslider.cpp analysis.cpp
+    preferences.cpp qxtspanslider.cpp analysis.cpp \
+    aboutdialog.cpp
 FORMS += \
-    preferences.ui
+    preferences.ui \
+    window.ui \
+    aboutdialog.ui
